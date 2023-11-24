@@ -1,0 +1,56 @@
+// ExpenseForm.js
+import React, { useState } from 'react';
+
+const ExpenseForm = () => {
+  const [formData, setFormData] = useState({
+    expenseTitle: '',
+    expenseAmount: '',
+    expenseDate: '',
+  });
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    console.log(`${name}: ${value}`);
+  };
+
+  return (
+    <div>
+      <label htmlFor="expenseTitle">Expense Title:</label>
+      <input
+        type="text"
+        id="expenseTitle"
+        name="expenseTitle"
+        value={formData.expenseTitle}
+        onChange={handleInputChange}
+      />
+
+      <label htmlFor="expenseAmount">Expense Amount:</label>
+      <input
+        type="number"
+        id="expenseAmount"
+        name="expenseAmount"
+        value={formData.expenseAmount}
+        onChange={handleInputChange}
+      />
+
+      <label htmlFor="expenseDate">Date:</label>
+      <input
+        type="date"
+        id="expenseDate"
+        name="expenseDate"
+        value={formData.expenseDate}
+        onChange={handleInputChange}
+      />
+
+      <button>Add Expense</button>
+    </div>
+  );
+};
+
+export default ExpenseForm;
