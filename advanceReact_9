@@ -1,0 +1,88 @@
+// ExpenseForm.js
+import React, { useState } from 'react';
+
+const ExpenseForm = ({ onAddExpense, filteredYear, onFilterChange }) => {
+  const [userInput, setUserInput] = useState({
+    title: '',
+    amount: '',
+    date: '',
+  });
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setUserInput((prevInput) => ({
+      ...prevInput,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const expenseData = {
+      title: userInput.title,
+      amount: userInput.amount,
+      date: new Date(userInput.date),
+    };
+
+    onAddExpense(expenseData);
+
+   setUserInput({
+      title: '',
+      amount: '',
+      date: '',
+    });
+  };
+
+  const handleFilterChange = (event) => {
+    const selectedYear = event.target.value;
+    onFilterChange(selectedYear);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="expenseTitle">Expense Title:</label>
+      <input
+        type="text"
+        id="expenseTitle"
+        name="title"
+        value={userInput.title}
+        onChange={handleInputChange}
+      />
+
+      <label htmlFor="expenseAmount">Expense Amount:</label>
+      <input
+        type="number"
+        id="expenseAmount"
+        name="amount"
+        value={userInput.amount}
+        onChange={handleInputChange}
+      />
+
+      <label htmlFor="expenseDate">Date:</label>
+      <input
+        type="date"
+        id="expenseDate"
+        name="date"
+        value={userInput.date}
+        onChange={handleInputChange}
+      />
+
+      <label htmlFor="filteredYear">Filter by Year:</label>
+      <select
+        id="filteredYear"
+        name="filteredYear"
+        value={filteredYear}
+        onChange={handleFilterChange}
+      >
+        <option value="">All</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+      </select>
+
+      <button type="submit">Add Expense</button>
+    </form>
+  );
+};
+
+export default ExpenseForm;
