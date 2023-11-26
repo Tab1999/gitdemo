@@ -1,0 +1,100 @@
+// ExpenseForm.js
+import React, { useState } from 'react';
+
+const ExpenseForm = ({ onAddExpense, filteredYear }) => {
+  const [userInput, setUserInput] = useState({
+    title: '',
+    amount: '',
+    date: '',
+  });
+  
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setUserInput((prevInput) => ({
+      ...prevInput,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const expenseData = {
+      title: userInput.title,
+      amount: userInput.amount,
+      date: new Date(userInput.date),
+    };
+
+    onAddExpense(expenseData);
+
+    setUserInput({
+      title: '',
+      amount: '',
+      date: '',
+    });
+
+    // Hide the form after adding an expense
+    setIsFormVisible(false);
+  };
+
+  const handleCancel = () => {
+    // Clear the form and hide it on cancel
+    setUserInput({
+      title: '',
+      amount: '',
+      date: '',
+    });
+    setIsFormVisible(false);
+  };
+
+  const handleShowForm = () => {
+   
+    setIsFormVisible(true);
+  };
+
+  return (
+    <div>
+      {!isFormVisible && (
+        <button onClick={handleShowForm}>Add Expense</button>
+      )}
+
+      {isFormVisible && (
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="expenseTitle">Expense Title:</label>
+          <input
+            type="text"
+            id="expenseTitle"
+            name="title"
+            value={userInput.title}
+            onChange={handleInputChange}
+          />
+
+          <label htmlFor="expenseAmount">Expense Amount:</label>
+          <input
+            type="number"
+            id="expenseAmount"
+            name="amount"
+            value={userInput.amount}
+            onChange={handleInputChange}
+          />
+
+          <label htmlFor="expenseDate">Date:</label>
+          <input
+            type="date"
+            id="expenseDate"
+            name="date"
+            value={userInput.date}
+            onChange={handleInputChange}
+          />
+
+          <button type="submit">Add Expense</button>
+          <button type="button" onClick={handleCancel}>Cancel</button>
+        </form>
+      )}
+    </div>
+  );
+};
+
+export default ExpenseForm;
