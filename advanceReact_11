@@ -1,0 +1,33 @@
+// App.js
+import React, { useState } from 'react';
+import ExpenseForm from './ExpenseForm';
+import Expenses from './Expenses';
+
+const App = () => {
+  const [expenses, setExpenses] = useState([]);
+  const [filteredYear, setFilteredYear] = useState('');
+
+  const addExpenseHandler = (expenseData) => {
+    setExpenses((prevExpenses) => [...prevExpenses, expenseData]);
+  };
+
+  const filterChangeHandler = (selectedYear) => {
+    setFilteredYear(selectedYear);
+  };
+
+  // Filter expenses based on the selected year
+  const filteredExpenses = expenses.filter(
+    (expense) =>
+      !filteredYear || expense.date.getFullYear().toString() === filteredYear
+  );
+
+  return (
+    <div>
+      <h1>Expense Tracker</h1>
+      <ExpenseForm onAddExpense={addExpenseHandler} onFilterChange={filterChangeHandler} filteredYear={filteredYear} />
+      <Expenses expenses={filteredExpenses} />
+    </div>
+  );
+};
+
+export default App;
