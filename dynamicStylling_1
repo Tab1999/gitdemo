@@ -1,0 +1,51 @@
+import React, { useState } from 'react';
+// import './App.css'; // You can create this CSS file for styling
+
+const App = () => {
+  const [goal, setGoal] = useState('');
+  const [goals, setGoals] = useState([]);
+  const [buttonStyle, setButtonStyle] = useState({ backgroundColor: 'lightcoral' });
+
+  const handleInputChange = (event) => {
+    const inputText = event.target.value;
+    setGoal(inputText);
+
+    // Change button style based on input length
+    setButtonStyle(inputText.length === 0 ? { backgroundColor: 'lightcoral' } : { backgroundColor: 'red' });
+  };
+
+  const handleAddGoal = () => {
+    if (goal.length > 0) {
+      setGoals([...goals, goal]);
+      setGoal('');
+      setButtonStyle({ backgroundColor: 'lightcoral' }); // Set back to light red after adding a goal
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Course Goal </h1>
+      <div>
+        <input
+          type="text"
+          value={goal}
+          onChange={handleInputChange}
+          placeholder="Enter your goal"
+        />
+        <button style={buttonStyle} onClick={handleAddGoal}>
+          Add Goal
+        </button>
+      </div>
+      <div>
+        <h2>Goals</h2>
+        <ul>
+          {goals.map((goal, index) => (
+            <li key={index}>{goal}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default App;
