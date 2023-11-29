@@ -1,0 +1,84 @@
+import React, { useState, useRef } from 'react';
+
+const App = () => {
+  const [username, setUsername] = useState('');
+  const [age, setAge] = useState('');
+  const [college, setCollege] = useState('');
+  const [userList, setUserList] = useState([]);
+
+  const collegeRef = useRef();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    
+    if (!username.trim() || !age.trim() || !college.trim()) {
+      alert('Please enter all fields.');
+      return;
+    }
+
+    
+    setUserList((prevUserList) => [
+      ...prevUserList,
+      { username, age: parseInt(age, 10), college: collegeRef.current.value },
+    ]);
+
+    
+    setUsername('');
+    setAge('');
+    setCollege('');
+  };
+
+  return (
+    <div>
+      <h1>User Information</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="age">Age:</label>
+          <input
+            type="text"
+            id="age"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="college">College Name:</label>
+          <input
+            type="text"
+            id="college"
+            value={college}
+            onChange={(e) => setCollege(e.target.value)}
+            ref={collegeRef}
+          />
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+      <div>
+        <h2>User List:</h2>
+        {userList.length > 0 ? (
+          <ul>
+            {userList.map((user, index) => (
+              <li key={index}>
+                Username: {user.username}, Age: {user.age}, College: {user.college}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No users entered yet.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
