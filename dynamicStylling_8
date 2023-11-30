@@ -1,0 +1,82 @@
+import React, { useReducer } from 'react';
+
+// Action types
+const SET_EMAIL = 'SET_EMAIL';
+const SET_PASSWORD = 'SET_PASSWORD';
+const SET_EMAIL_VALIDITY = 'SET_EMAIL_VALIDITY';
+const SET_PASSWORD_VALIDITY = 'SET_PASSWORD_VALIDITY';
+
+// Reducer function
+const formReducer = (state, action) => {
+  const reducers = {
+    [SET_EMAIL]: () => ({ ...state, enteredEmail: action.value }),
+    [SET_PASSWORD]: () => ({ ...state, enteredPassword: action.value }),
+    [SET_EMAIL_VALIDITY]: () => ({ ...state, isEmailValid: action.value }),
+    [SET_PASSWORD_VALIDITY]: () => ({ ...state, isPasswordValid: action.value }),
+  };
+
+  return reducers[action.type] ? reducers[action.type]() : state;
+};
+
+const initialState = {
+  enteredEmail: '',
+  isEmailValid: false,
+  enteredPassword: '',
+  isPasswordValid: false,
+};
+
+const LoginForm = () => {
+  const [state, dispatch] = useReducer(formReducer, initialState);
+
+  const emailChangeHandler = (event) => {
+    dispatch({ type: SET_EMAIL, value: event.target.value });
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(event.target.value);
+    dispatch({ type: SET_EMAIL_VALIDITY, value: isValid });
+  };
+
+  const passwordChangeHandler = (event) => {
+    dispatch({ type: SET_PASSWORD, value: event.target.value });
+    const isValid = event.target.value.length >= 6;
+    dispatch({ type: SET_PASSWORD_VALIDITY, value: isValid });
+  };
+
+  const submitHandler = (event) => {
+    event.preventDefault();
+
+    if (state.isEmailValid && state.isPasswordValid) {
+      console.log('Form submitted:', state.enteredEmail, state.enteredPassword);
+    } else {
+      console.log('Form is not valid. Please check your input.');
+    }
+  };
+
+  return (
+    <form onSubmit={submitHandler}>
+      <div>
+        <label htmlFor="email">Email:</label>
+        <input
+          type="email"
+          id="email"
+          value={state.enteredEmail}
+          onChange={emailChangeHandler}
+        />
+        {!state.isEmailValid && <p>Please enter a valid email address.</p>}
+      </div>
+      <div>
+        <label htmlFor="password">Password:</label>
+        <input
+          type="password"
+          id="password"
+          value={state.enteredPassword}
+          onChange={passwordChangeHandler}
+        />
+        {!state.isPasswordValid && <p>Password must be at least 6 characters long.</p>}
+      </div>
+      <div>
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+  );
+};
+
+export default LoginForm;
