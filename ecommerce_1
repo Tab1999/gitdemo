@@ -1,0 +1,65 @@
+import React from 'react';
+import styles from './ProductsScreen.module.css';
+import {Link} from 'react-router-dom';
+
+const productsArr = [
+ 
+  {
+    title: 'Colors',
+    price: 100,
+    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%201.png',
+  },
+  {
+    title: 'Black and white Colors',
+    price: 50,
+    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%202.png',
+  },
+  {
+    title: 'Yellow and Black Colors',
+    price: 70,
+    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%203.png',
+  },
+  {
+    title: 'Blue Color',
+    price: 100,
+    imageUrl: 'https://prasadyash2411.github.io/ecom-website/img/Album%204.png',
+  },
+];
+
+const ProductsScreen = () => {
+  return (
+    <div className={styles.productContainer}>
+      <h1 className={`mt-4 mb-4 ${styles.header}`}>The Generic - Product Showcase</h1>
+      <div className="row">
+        {productsArr.map((product, index) => (
+          <div key={index} className={`col-xs-12 col-sm-6 col-md-4 col-lg-3 ${styles.productCard}`}>
+            <div className="card">
+              <img className={`card-img-top ${styles.productImage}`} src={product.imageUrl} alt={product.title} />
+              <div className="card-body">
+                <h5 className={`card-title ${styles.productTitle}`}>{product.title}</h5>
+                <p className={`card-text ${styles.productPrice}`}>${product.price}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="d-flex justify-content-between mt-4">
+        <Link to="/" className="btn btn-primary">
+          Home
+        </Link>
+        <Link to="/about" className="btn btn-primary">
+          About
+        </Link>
+        <Link to="/store" className="btn btn-primary">
+          Store
+        </Link>
+        <Link to="/cart" className={`btn btn-primary ${styles.cartButton}`}>
+          Cart
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+
+export default ProductsScreen;
