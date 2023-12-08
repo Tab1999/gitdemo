@@ -1,0 +1,129 @@
+import React, { useState } from 'react';
+import './modal.css';
+
+const TShirtForm = () => {
+  const [tshirt, setTshirt] = useState({
+    name: '',
+    description: '',
+    price: '',
+    size: 'large', // default size
+  });
+
+  const [cartItems, setCartItems] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState({
+    small: 20,
+    medium: 30,
+    large: 100,
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setTshirt((prevTshirt) => ({
+      ...prevTshirt,
+      [name]: value,
+    }));
+  };
+
+  const handleAddToCart = () => {
+    setCartItems((prevCartItems) => [...prevCartItems, tshirt]);
+    setQuantity((prevQuantity) => ({
+      ...prevQuantity,
+      [tshirt.size]: prevQuantity[tshirt.size] - 1,
+    }));
+    // Reset the form fields after adding to cart
+    setTshirt({
+      name: '',
+      description: '',
+      price: '',
+      size: 'large',
+    });
+  };
+
+  const handleShowModal = (item) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedItem(null);
+    setIsModalOpen(false);
+  };
+
+  const calculateTotalPrice = (selectedQuantity) => {
+    return (parseFloat(selectedItem.price) * selectedQuantity).toFixed(2);
+  };
+
+  const handleOrder = () => {
+    // Add your order-related logic here
+    console.log('Order placed:', selectedItem);
+    // You can implement the logic to submit the order, update the database, etc.
+  };
+
+  return (
+    <div>
+      
+       <form>
+        <label>
+          T-shirt Name:
+          <input type="text" name="name" value={tshirt.name} onChange={handleChange} />
+        </label>
+        <br />
+        <label>
+          Description:
+          <textarea name="description" value={tshirt.description} onChange={handleChange} />
+        </label>
+        <br />
+        <label>
+          Price:
+          <input type="text" name="price" value={tshirt.price} onChange={handleChange} />
+        </label>
+        <br />
+        <label>
+          Size:
+          <select name="size" value={tshirt.size} onChange={handleChange}>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+        <br />
+        <button type="button" onClick={handleAddToCart}>
+          Add to Cart
+        </button>
+      </form>
+      
+      <div>
+        <h2>Items</h2>
+        {cartItems.map((item, index) => (
+          <div key={index}>
+            <p>{`Name: ${item.name}, Description: ${item.description}, Price: ${item.price}`}</p>
+            <button onClick={() => handleShowModal(item)}>{`Buy Large (Quantity: 100)`}</button>
+            <button onClick={() => handleShowModal(item)}>{`Buy Medium (Quantity: 30)`}</button>
+            <button onClick={() => handleShowModal(item)}>{`Buy Small (Quantity: 20)`}</button>
+          </div>
+        ))}
+      </div>
+
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close" onClick={handleCloseModal}>
+              &times;
+            </span>
+            <p>{`Name: ${selectedItem.name}`}</p>
+            <p>{`Price: ${selectedItem.price}`}</p>
+            <p>{`Size: ${selectedItem.size}`}</p>
+            <p>{`Selected Quantity: 4`}</p>
+            <p>{`Total Price: $${calculateTotalPrice(100)}`}</p>
+            <button onClick={handleCloseModal}>Close</button>
+            <button onClick={handleOrder}>Order</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TShirtForm;
