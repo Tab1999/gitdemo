@@ -1,0 +1,81 @@
+import classes from './MealItem.module.css'
+import MealItemForm from './MealItemForm';
+import { useContext } from 'react';
+import CartContext from '../../../store/cart-context';
+
+const MealItem = (props) => {
+  const cartCtx = useContext(CartContext);
+
+  const price = `$${props.price.toFixed(2)}`;
+
+  const addToCartHandler=(amount)=>{
+      cartCtx.addItem({
+        id: props.id,
+        name: props.name,
+        amount: amount,
+        price: props.price
+      });
+    }
+
+  
+   return (
+    <li className={classes.meal}>
+      <div className={classes['meal-info']}>
+        <h3>{props.name}</h3>
+        <div className={classes.description}>{props.description}</div>
+        <div className={classes.price}>{price}</div>
+      </div>
+      <div>
+        <img src={props.imageUrl} alt={props.name} className={classes.image} />
+      </div>
+      <div>
+         <MealItemForm onAddToCart={addToCartHandler} />
+      </div>
+    </li>
+  );
+};
+
+
+export default MealItem;
+
+
+import classes from './MealItemForm.module.css';
+import Input from '../../UI/Input';
+
+import {useRef, useState} from 'react';
+
+const MealItemForm = (props)=>{
+
+    const [amountIsValid, setAmountIsValid] = useState(true);
+    const amountInputRef =  useRef();
+    const submitHandler = event =>{
+         event.preventDefault();
+         const enteredAmount = amountInputRef.current.value;
+         const enteredAmountNumber = + enteredAmount;
+
+         if(enteredAmount.trim().length === 0 | enteredAmount<1 || enteredAmount >5){
+            setAmountIsValid(false);
+            return ;
+         }
+
+         props.onAddToCart(enteredAmountNumber);
+    }
+    return<>
+    <form className={classes.form} onSubmit={submitHandler}>
+        <Input
+            ref ={amountInputRef}
+            label="Amount" input={{
+            id: 'amount',
+            type: 'number',
+            min: '1',
+            max: '5',
+            step:'1',
+            defaultValue: '1'
+        }}/>
+           <button>+Add</button>
+           {!amountIsValid && <p>Please enter a valid amount (1-5)</p>}
+    </form>
+    </>
+}
+
+export default MealItemForm;
