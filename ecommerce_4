@@ -1,0 +1,42 @@
+// Navigation.js
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+importstyles from './Navigation.module.css'; 
+
+const Navigation = () => {
+  return (
+    <nav className={styles.navigation}>
+      <ul className={styles.navList}>
+        <li>
+          <NavLink to="/" className={styles.navLink}>
+            Home
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/about" className={styles.navLink}>
+            About Us
+          </NavLink>
+        </li>
+        {/* Add other NavLink items as needed */}
+      </ul>
+    </nav>
+  );
+};
+
+export default Navigation;
+
+// AboutPage.js
+import React from 'react';
+import styles from './AboutPage.module.css';
+
+const AboutPage = () => {
+  return (
+    <div className={styles.aboutPage}>
+      <h1 className={styles.title}>About Us</h1>
+      <p className={styles.content}>This is the about page content...</p>
+    </div>
+  );
+};
+
+export default AboutPage;
+
