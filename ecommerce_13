@@ -1,0 +1,104 @@
+// ProductPage.js
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import ProductImages from './ProductImages';
+import ProductReviews from './ProductReviews';
+
+const Product = () => {
+  // Use the useParams hook to get the productId from the URL
+  const { productId } = useParams();
+
+  // Dummy data for demonstration
+  const productData = {
+    productId: 'p1',
+    productName: 'Example Product',
+    images: [
+      'https://img.freepik.com/premium-photo/multicolored-powder-explosion-black-background_36326-197.jpg',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREWyPTkFHjV6r_R-7UCvBqtou7BYCgsbQOKQ&usqp=CAU',
+      'https://i.pinimg.com/originals/03/8f/4e/038f4ee1b91b7ae2acea84db1122e100.jpg',
+    ],
+    reviews: [
+      { id: 'r1', user: 'User1', comment: 'Great product!', rating: 5 },
+      { id: 'r2', user: 'User2', comment: 'Average product.', rating: 3 },
+    ],
+  };
+
+  return (
+    <div>
+      <h2>{productData.productName}</h2>
+      <ProductImages images={productData.images} />
+      <ProductReviews reviews={productData.reviews} />
+    </div>
+  );
+};
+
+export default Product;
+
+
+
+import React from 'react';
+import classes from './ProductImages.module.css';
+
+const ProductImages = ({ images }) => {
+  return (
+    <div className={classes['image-container']}>
+      {images.map((image, index) => (
+        <img
+          key={index}
+          className={classes['product-image']}
+          src={image}
+          alt={`Product ${index + 1}`}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default ProductImages;
+
+
+
+import React from 'react';
+import StarRating from './StarRating';
+import classes from './ProductReviews.module.css';
+
+const ProductReviews = ({ reviews }) => {
+  return (
+    <div className={classes['product-reviews']}>
+      <h3>Product Reviews</h3>
+      <ul>
+        {reviews.map((review) => (
+          <li key={review.id} className={classes['review-item']}>
+            <strong>{review.user}</strong> - {review.comment}{' '}
+            <span className={classes['star-rating']}>
+              <StarRating rating={review.rating} />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default ProductReviews;
+
+
+import React from 'react';
+
+const StarRating = ({ rating }) => {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 !== 0;
+
+  const stars = Array.from({ length: fullStars }, (_, index) => (
+    <span key={index}>&#9733;</span>
+  ));
+
+  if (hasHalfStar) {
+    stars.push(<span key="half">&#9734;&#9733;</span>);
+  }
+
+  return <div>{stars}</div>;
+};
+
+export default StarRating;
+
