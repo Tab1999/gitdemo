@@ -1,0 +1,44 @@
+import React from "react";
+import styles from './Home.module.css';
+
+const Home =()=>{
+    const dummyTours = [
+        { id: 1, date: '2023-07-15', place: 'City A' },
+        { id: 2, date: '2023-08-22', place: 'City B' },
+        { id: 3, date: '2023-09-10', place: 'City C' },
+       
+      ];
+
+    
+    return (
+    <div className={styles.container}>
+      <h1>Welcome to Our Tours Page</h1>
+      <div>
+        {dummyTours.map((tour) => (
+          <TourCard key={tour.id} date={tour.date} place={tour.place} />
+        ))}
+      </div>
+    </div>
+  );
+    
+
+}
+export default Home;
+
+
+const TourCard = ({ date, place }) => {
+    const handleBuyTicket = () => {
+      console.log(`Ticket for ${place} on ${date} purchased!`);
+    };
+  
+    return (
+        <div className={styles.card}>
+        <h2>{place}</h2>
+        <p>Date: {date}</p>
+        <button className={styles.button} onClick={handleBuyTicket}>
+          Buy Ticket
+        </button>
+      </div>
+    );
+  };
+  
