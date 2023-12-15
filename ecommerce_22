@@ -1,0 +1,85 @@
+import { Switch, Route, Routes , Redirect} from 'react-router-dom';
+
+import Layout from './Main/components/Layout/Layout';
+import UserProfile from './Main/components/Profile/UserProfile';
+import AuthPage from './Main/pages/AuthPage';
+import HomePage from './Main/pages/HomePage';
+import { useContext } from 'react';
+import AuthContext from './Main/store/auth-context';
+import Ecommerce from './Ecommerce';
+import Meals from './components/Meals/Meals';
+
+
+
+function App() {
+  const authCtx= useContext(AuthContext)
+  return (
+    <>
+    <Layout>
+      <Switch>
+       
+        <Route path="/" exact component={HomePage} />
+        {!authCtx.isLoggedIn && (<Route path="/auth" exact component={AuthPage} />)}
+        <Route path="/profile">
+         {/* {authCtx.isLoggedIn && <UserProfile/>} */}
+         {authCtx.isLoggedIn && <Ecommerce/>}
+         {!authCtx.isLoggedIn && <Redirect to='/auth'/>}
+        </Route>
+       
+        <Route path ='*'>
+          <Redirect to='/'/>
+        </Route>
+      </Switch>
+    </Layout>
+    </>
+  );
+}
+
+export default App;
+
+
+
+import { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Switch } from 'react-router-dom';
+import Header from './components/Layout/Header';
+import Meals from './components/Meals/Meals';
+import Cart from './components/Cart/Cart';
+import CartProvider from './store/CartProvider';
+import About from './components/Pages/About';
+import Home from './components/Pages/Home'
+import Contact from './components/Pages/Contact';
+import Product from './components/Pages/Product';
+
+
+function Ecommerce() {
+  const [cartIsShown, setCartIsShown] = useState(false);
+
+  const showCartHandler = () => {
+    setCartIsShown(true);
+  };
+
+  const hideCartHandler = () => {
+    setCartIsShown(false);
+  };
+
+  return (
+    <>
+    <CartProvider>
+        {cartIsShown && <Cart onClose={hideCartHandler} />}
+        <Router>
+          <Header onShowCart={showCartHandler} />
+          <Switch>
+           
+            <Route path="/" exact component={Meals} />
+            <Route path="/about" component={About} />
+            <Route path="/home" component={Home} />
+            <Route path="/contact" component={Contact}/>
+            <Route path="/products/:productId" component={Product}/>
+          </Switch>
+        </Router>
+      </CartProvider>
+    </>
+  );
+}
+
+export default Ecommerce;
