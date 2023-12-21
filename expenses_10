@@ -1,0 +1,228 @@
+import React, { useState, useEffect } from 'react';
+import styles from './ExpenseForm.module.css';
+
+const ExpenseInput = ({ label, type, value, onChange, required }) => {
+  return (
+    <div className={styles.formControl}>
+      <label htmlFor={label}>{label}</label>
+      <input
+        type={type}
+        id={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+      />
+    </div>
+  );
+};
+
+const ExpenseForm = () => {
+  const [moneySpent, setMoneySpent] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [expenses, setExpenses] = useState([]);
+  const [editingExpense, setEditingExpense] = useState(null);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+  const fetchExpenses = () => {
+    fetch('https://signup-fbdfd-default-rtdb.firebaseio.com/expenses.json')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch expenses!');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const fetchedExpenses = [];
+        for (const key in data) {
+          fetchedExpenses.push({ id: key, ...data[key] });
+        }
+        setExpenses(fetchedExpenses);
+      })
+      .catch((error) => {
+        console.error('Expense fetch error:', error.message);
+      });
+  };
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+
+    const formData = {
+      moneySpent: +moneySpent,
+      description,
+      category,
+    };
+
+    if (editingExpense) {
+      // If editing an expense, perform a PUT request to update the values
+      fetch(`https://signup-fbdfd-default-rtdb.firebaseio.com/expenses/${editingExpense.id}.json`, {
+        method: 'PUT',
+        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Expense update failed!');
+          }
+          return response.json();
+        })
+        .then(() => {
+          console.log('Expense successfully updated');
+          setEditingExpense(null);
+          fetchExpenses();
+        })
+        .catch((error) => {
+          console.error('Expense update error:', error.message);
+        });
+    } else {
+      // If not editing, perform a POST request to add a new expense
+      fetch('https://signup-fbdfd-default-rtdb.firebaseio.com/expenses.json', {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Expense creation failed!');
+          }
+          return response.json();
+        })
+        .then(() => {
+          console.log('Expense successfully added');
+          fetchExpenses();
+        })
+        .catch((error) => {
+          console.error('Expense creation error:', error.message);
+        });
+    }
+
+    // Reset the form fields after submission
+    setMoneySpent('');
+    setDescription('');
+    setCategory('');
+  };
+
+  const deleteHandler = (expenseId) => {
+    // Perform a DELETE request to remove the expense from the database
+    fetch(`https://signup-fbdfd-default-rtdb.firebaseio.com/expenses/${expenseId}.json`, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Expense deletion failed!');
+        }
+        console.log('Expense successfully deleted');
+        fetchExpenses();
+      })
+      .catch((error) => {
+        console.error('Expense deletion error:', error.message);
+      });
+  };
+
+  const editHandler = (expense) => {
+    // Set the values of the expense to be edited
+    setEditingExpense(expense);
+    setMoneySpent(expense.moneySpent.toString());
+    setDescription(expense.description);
+    setCategory(expense.category);
+  };
+
+  const cancelEditHandler = () => {
+    // Cancel the edit mode
+    setEditingExpense(null);
+    setMoneySpent('');
+    setDescription('');
+    setCategory('');
+  };
+
+  return (
+    <div className={styles.expenseContainer}>
+      <form className={styles.expenseForm} onSubmit={submitHandler}>
+        <ExpenseInput
+          label="Money Spent"
+          type="number"
+          value={moneySpent}
+          onChange={setMoneySpent}
+          required
+        />
+        <ExpenseInput
+          label="Description"
+          type="text"
+          value={description}
+          onChange={setDescription}
+          required
+        />
+        <ExpenseInput
+          label="Category"
+          type="text"
+          value={category}
+          onChange={setCategory}
+          required
+        />
+        <div className={styles.formActions}>
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+
+      <div className={styles.expenseList}>
+        <h2>Expense List</h2>
+        {expenses.length === 0 && <p>No expenses yet.</p>}
+        {expenses.map((expense) => (
+          <div key={expense.id} className={styles.expenseItem}>
+            <p>Money Spent: {expense.moneySpent}</p>
+            <p>Description: {expense.description}</p>
+            <p>Category: {expense.category}</p>
+            <div>
+              <button onClick={() => deleteHandler(expense.id)}>Delete</button>
+              <button onClick={() => editHandler(expense)}>Edit</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {editingExpense && (
+        <div className={styles.editForm}>
+          <h2>Edit Expense</h2>
+          <form onSubmit={submitHandler}>
+            <ExpenseInput
+              label="Money Spent"
+              type="number"
+              value={moneySpent}
+              onChange={setMoneySpent}
+              required
+            />
+            <ExpenseInput
+              label="Description"
+              type="text"
+              value={description}
+              onChange={setDescription}
+              required
+            />
+            <ExpenseInput
+              label="Category"
+              type="text"
+              value={category}
+              onChange={setCategory}
+              required
+            />
+            <div>
+              <button type="submit">Submit</button>
+              <button type="button" onClick={cancelEditHandler}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ExpenseForm;
