@@ -1,0 +1,152 @@
+//Header.js
+import classes from './Header.module.css';
+import {useSelector, useDispatch} from 'react-redux';
+import { authActions } from '../store/auth';
+
+const Header = () => {
+  const dispatch =useDispatch();
+  const isAuth = useSelector(state => state.auth.isAuthenticated)
+  const logoutHandler=()=>{
+   dispatch(authActions.logout());
+
+  }
+  
+  return (
+    <header className={classes.header}>
+      <h1>Redux Auth</h1>
+      {isAuth && (
+        <nav>
+        <ul>
+          <li>
+            <a href='/'>My Products</a>
+          </li>
+          <li>
+            <a href='/'>My Sales</a>
+          </li>
+          <li>
+            <button onClick={logoutHandler}>Logout</button>
+          </li>
+        </ul>
+      </nav>
+      )}
+    </header>
+  );
+};
+
+export default Header;
+
+//UserProfile.js
+import classes from './UserProfile.module.css';
+
+const UserProfile = () => {
+  return (
+    <main className={classes.profile}>
+      <h2>My User Profile</h2>
+    </main>
+  );
+};
+
+export default UserProfile;
+
+
+//Auth.js
+import classes from './Auth.module.css';
+import {useDispatch} from 'react-redux';
+import {authActions} from '../store/auth'
+
+const Auth = () => {
+const dispatch = useDispatch();
+
+  const loginHandler =(e)=>{
+    e.preventDefault();
+     
+    dispatch(authActions.login());
+
+  }
+  return (
+    <main className={classes.auth}>
+      <section>
+        <form onSubmit={loginHandler}>
+          <div className={classes.control}>
+            <label htmlFor='email'>Email</label>
+            <input type='email' id='email' />
+          </div>
+          <div className={classes.control}>
+            <label htmlFor='password'>Password</label>
+            <input type='password' id='password' />
+          </div>
+          <button>Login</button>
+        </form>
+      </section>
+    </main>
+  );
+};
+
+export default Auth;
+
+
+//auth.js
+import { createSlice } from "@reduxjs/toolkit"
+
+const initialAuthState={
+    isAuthenticated : false
+}
+
+const authSlice = createSlice({
+    name: 'authentication',
+    initialState: initialAuthState,
+    reducers:{
+        login(state){ 
+            state.isAuthenticated = true
+        },
+        logout(state){
+          state.isAuthenticated = false
+        }
+    }
+})
+export const authActions  = authSlice.actions;
+
+export default authSlice.reducer;
+
+//index.js
+
+import { configureStore } from '@reduxjs/toolkit';
+
+
+import counterReducer from './counter';
+import authReducer from './auth';
+
+
+
+const store = configureStore({
+    reducer: {counter: counterReducer,
+          auth: authReducer}
+});
+
+export default store;
+
+//App.js
+
+import { Fragment } from 'react';
+import Counter from './components/Counter';
+import Auth from './components/Auth'
+import Header from './components/Header'
+import {useSelector} from 'react-redux'
+import UserProfile from './components/UserProfile'
+
+
+function App() {
+  const isAuth = useSelector(state => state.auth.isAuthenticated)
+  return (
+
+    <Fragment>
+      <Header/>
+      {!isAuth && <Auth/>}
+      {isAuth && <UserProfile/>}
+     
+       <Counter />
+    </Fragment>
+  );
+}
+
+export default App;
