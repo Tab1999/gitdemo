@@ -1,0 +1,39 @@
+//import redux
+const redux = require('redux');
+
+
+//reducer function that help components to get data from store
+const counterReducer = (state={counter :0}, action)=>{
+    if(action.type==='increment'){
+        return{
+            counter: state.counter+2
+        }
+    }
+    if(action.type==='decrement'){
+        return{
+            counter: state.counter -2,
+        }
+    }
+
+   return state;
+}
+
+// data store that is used by components
+const store = redux.createStore(counterReducer);
+
+console.log(store.getState());
+
+
+//component
+ const counterSubscriber = ()=>{
+    const latestState = store.getState();
+    console.log(latestState);
+ }
+
+//component subscribe to store to get data
+ store.subscribe(counterSubscriber)
+
+
+ //actions forwarded to reducer function from components
+ store.dispatch({type: 'increment'});
+ store.dispatch({type: 'decrement'});
