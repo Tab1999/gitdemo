@@ -1,0 +1,261 @@
+//Auth.js
+
+import React, { useRef, useState, useEffect } from "react";
+import Card from 'react-bootstrap/Card';
+import {Alert, Button, Container, Form } from "react-bootstrap";
+import {useDispatch} from 'react-redux'
+import { authAction } from "../store/auth";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+
+const Auth = () => {
+  const email = useRef();
+  const password = useRef();
+  const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const history = useHistory();
+
+  useEffect(() => {
+    // Clear input fields on component mount
+    email.current.value = '';
+    password.current.value = '';
+  }, [isLogin]);
+
+  const switchAuthModeHandler = () => {
+    setIsLogin(prevState => !prevState);
+  }
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+
+    const enteredEmail = email.current.value;
+    const enteredPassword = password.current.value;
+
+    try {
+      let url;
+      if (isLogin) {
+        url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBMlN6Z7bLS8K0WvQ_gg_P6hnGErTnyzIo';
+      } else {
+        url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBMlN6Z7bLS8K0WvQ_gg_P6hnGErTnyzIo';
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: enteredEmail,
+          password: enteredPassword,
+          returnSecureToken: true,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      console.log("Authentication succeed" , data)
+     
+      if (!response.ok) {
+        throw new Error(data.error.message || 'Authentication Failed');
+      }
+
+      // Clear error on successful submission
+      dispatch(authAction.login({userId: data.userId}));
+    //   history.replace('/');
+
+      setError(null);
+
+    } catch (error) {
+        console.log(error)
+      setError(error.message);
+
+    }
+  }
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    const enteredEmail = email.current.value;
+
+    fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyBMlN6Z7bLS8K0WvQ_gg_P6hnGErTnyzIo', {
+      method: 'POST',
+      body: JSON.stringify({
+        requestType: 'PASSWORD_RESET',
+        email: enteredEmail,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Update failed');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log('Update successful:', data);
+      })
+      .catch((error) => {
+        console.error('Update failed:', error.message);
+      });
+  };
+
+  return (
+    <Container className="d-flex align-items-center justify-content-center vh-100">
+      <Card className="shadow" style={{ width: '18rem', backgroundColor: 'lightgrey' }}>
+        <Card.Title style={{ textAlign: "center", margin:"1rem" }}>{isLogin ? 'Login' : 'Signup'}</Card.Title>
+        <Form onSubmit={submitHandler} style={{ margin: "1rem" }}>
+          <Form.Group className="mb-3" controlId="formBasicEmail">
+            <Form.Label>Email address</Form.Label>
+            <Form.Control type="email" placeholder="Enter email" ref={email} required />
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="formBasicPassword">
+            <Form.Label>Password</Form.Label>
+            <Form.Control type="password" placeholder="Password" ref={password} required />
+          </Form.Group>
+
+          <Button variant="outline-*" type="button" onClick={handleForgotPassword} style={{marginLeft:'3rem'}}>
+               Forgot Password
+          </Button>
+
+          <Button style={{ marginLeft: "5.4rem", marginTop:'1rem' }} variant="primary" type="submit">
+            {isLogin ? 'Login' : 'Signup'}
+          </Button>
+
+          <Button variant="link" type="button" style={{marginLeft: isLogin ? '2.4rem': '1.5rem'}} onClick={switchAuthModeHandler} >
+            {isLogin ? 'Create new account' : 'Login with existing account'}
+          </Button>
+        </Form>
+
+        {error && <Alert variant="danger" style={{margin:"1rem", textAlign:'center'}}>{error}</Alert>}
+      </Card>
+    </Container>
+  );
+}
+
+export default Auth;
+
+//Header.js
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+import { useDispatch, useSelector } from 'react-redux';
+import { authAction } from '../store/auth';
+import {Link, NavLink} from 'react-router-dom';
+import { Button } from 'react-bootstrap';
+
+const Header =()=> {
+    const isAuth = useSelector(state => state.auth.isLoggedIn) ;
+    const dispatch = useDispatch();
+
+    const logoutHandler=()=>{
+        dispatch(authAction.logout());
+    }
+    
+  return (
+    <Navbar expand="lg" className="bg-body-tertiary">
+      <Container>
+        <Navbar.Brand as={Link} to="/">MailBox-Client</Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            {isAuth && <Nav.Link as={NavLink} to="/home">Home</Nav.Link>}
+            {/* {isAuth && <Nav.Link href="#link">Link</Nav.Link>} */}
+            {isAuth && <Button variant='link' onClick={logoutHandler}>Logout</Button>}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
+}
+
+export default Header;
+
+//App.js
+// import React from "react";
+// import Button from "react-bootstrap/Button";
+// import Auth from "./component/Auth";
+// import Header from "./component/Header";
+// import { Route, Router, Switch } from "react-router-dom/cjs/react-router-dom.min";
+// import Home from "./component/Home";
+// import { useSelector } from "react-redux";
+
+// function App() {
+//   const isAuth = useSelector(state=> state.auth.isLoggedIn);
+
+//   return (<>
+//    {/* <Header/>
+//    <Auth/> */}
+
+//    <Router>
+//     <Header/>
+//     <Switch>
+//       <Route path="/">
+//          {isAuth && <Home/>}
+//       </Route>
+//       <Route path></Route>
+//     </Switch>
+
+//     {!isAuth && <Auth/>}
+//    </Router>
+   
+//   </>
+  
+
+//   );
+// }
+
+// export default App;
+
+
+import React from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import Auth from "./component/Auth"; // Make sure to use the correct path
+import Header from "./component/Header"; // Make sure to use the correct path
+import Home from "./component/Home"; // Make sure to use the correct path
+import { useSelector } from "react-redux";
+
+function App() {
+  const isAuth = useSelector((state) => state.auth.isLoggedIn);
+
+  return (
+    <Router>
+      <Header />
+      <Switch>
+        <Route path="/home">
+          {isAuth && <Home />}
+        </Route>
+        <Route path="/">
+          {/* Default Route or Redirect to Home */}
+          {isAuth ? <Home /> : <Auth />}
+        </Route>
+      </Switch>
+    </Router>
+  );
+}
+
+export default App;
+import { createSlice } from "@reduxjs/toolkit";
+
+const authSlice = createSlice({
+    name:'auth',
+    initialState:{
+        isLoggedIn: false,
+        userId:null,
+    },
+    reducers:{
+        login(state, action){
+            state.isLoggedIn = true;
+            state.userId=action.payload.userId
+        },
+        logout(state){
+            state.isLoggedIn = false;
+            state.userId=null;
+        }
+    }
+})
+
+export const authAction = authSlice.actions;
+export default authSlice.reducer;
+//auth.js store
