@@ -1,0 +1,85 @@
+import { collection } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import {Card, Button, Container, ListGroup } from "react-bootstrap";
+import { useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { getDocs } from "firebase/firestore";
+import { db } from "../Firebase";
+
+
+const Inbox =()=>{
+    const [receivedMails, setReceivedMails] = useState([]);
+    const email = useSelector(state => state.auth.email);
+    const history = useHistory();
+
+    useEffect(()=>{
+
+        const fetchRecivedMails = async ()=>{
+            try{
+                const queryData = await getDocs(collection(db, `mailboxes/${email}/inbox`));
+                const mails = [];
+
+                queryData.forEach((doc)=>{
+                    mails.push({id: doc.id, ...doc.data()});
+                })
+                console.log(mails);
+                setReceivedMails(mails);
+
+            }
+            catch(error){
+              console.log("Error mails", error);
+            }
+        }
+
+
+        fetchRecivedMails();
+    }, [email])
+
+    const extractTextFromJSON = (jsonContent) => {
+        try {
+          const parsedContent = JSON.parse(jsonContent);
+          const text = parsedContent?.blocks?.[0]?.text || '';
+          return text;
+        } catch (error) {
+          console.error("Error parsing JSON content: ", error);
+          return '';
+        }
+      };
+
+    const handleComposeClick =()=>{
+         history.replace('./compose');
+    }
+
+    return<>
+    <Container className="d-flex align-items-center justify-content-center vh-80">
+        <Card  className="shadow" style={{ width: '70rem', marginTop:'3rem'}}>
+            <Card.Header>
+                <h5>Inbox</h5>
+            </Card.Header>
+            <Card.Body>
+                <ListGroup>
+                    {receivedMails.map(mail =>
+                    (
+                        <ListGroup.Item key={mail.id}>
+                            <strong>From: {mail.email}</strong>
+                            <br/>
+                            <span>Subject: {mail.subject}</span>
+                            <br/>
+                            <span>{extractTextFromJSON(mail.content)}</span>
+                        </ListGroup.Item>
+                    )
+                    )}
+                </ListGroup>
+            </Card.Body>
+            <Card.Footer>
+                <Button variant="primary" onClick={handleComposeClick} >
+                    Compose
+                </Button>
+            </Card.Footer>
+        </Card>
+    </Container>
+    </>
+
+}
+
+export default Inbox;
