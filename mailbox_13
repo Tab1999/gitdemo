@@ -1,0 +1,65 @@
+import { collection, getDoc, getDocs } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { Button, Card, Container, ListGroup } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { db } from "../Firebase";
+import { mailAction } from "../store/mails";
+
+const Sentbox = ()=>{
+    const [sentMails, setSentMails] = useState([]);
+    const email = useSelector(state => state.auth.email);
+    const history = useHistory()
+    const dispatch = useDispatch();
+
+    useEffect(()=>{
+         const fetchSentMails = async ()=>{
+            try{
+                 const querySnapshot = await getDocs(collection(db, `mailboxes/${email}/sentbox`));
+                 const mails=[];
+
+                 querySnapshot.forEach((doc)=>{
+                    mails.push({id: doc.id, ...doc.data()})
+                 })
+                 setSentMails(mails);
+            }   
+            catch(error){
+                 console.log("Error Fetching", error);
+            }
+         }
+
+         fetchSentMails();
+    },[email])
+
+    const handleMailClick =(mail)=>{
+       
+        history.push(`/message/${mail.id}`);
+    }
+
+
+    return<>
+    <Container className="d-flex align-items-center justify-content-center vh-80">
+        <Card className="shadow" style={{ width: "70rem", marginTop: "3rem" }}>
+            <Card.Header> 
+                <h5>SentBox</h5>
+            </Card.Header>
+            <Card.Body>
+                 <ListGroup>
+                    {sentMails.map((mail)=>(
+                        <ListGroup.Item
+                        key={mail.id}
+                        onClick={()=>handleMailClick(mail)}>
+                            <strong>To: {mail.to}</strong>
+                            <br/>
+                            <span>Subject:{mail.subject}</span>
+                        </ListGroup.Item>
+                    ))}
+                 </ListGroup>
+            </Card.Body>
+            
+        </Card>
+    </Container>
+    </>
+}
+
+export default Sentbox;
