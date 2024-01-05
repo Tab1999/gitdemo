@@ -1,0 +1,159 @@
+
+import React, { useEffect, useState } from "react";
+import { Card, Button, Container, ListGroup, Badge } from "react-bootstrap";
+import { useSelector, useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { getDocs, collection, doc, updateDoc } from "firebase/firestore";
+import { db } from "../Firebase";
+import { mailAction } from "../store/mails";
+import Message from "./Message";
+
+
+const Inbox = () => {
+  const [receivedMails, setReceivedMails] = useState([]);
+  const email = useSelector((state) => state.auth.email);
+  const history = useHistory();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchReceivedMails = async () => {
+      try {
+        const queryData = await getDocs(collection(db, `mailboxes/${email}/inbox`));
+        
+        const mails = [];
+
+        queryData.forEach((doc) => {
+          mails.push({ id: doc.id, ...doc.data(), read: doc.data().read || false });
+          // console.log(doc.data());
+        });
+       
+        setReceivedMails(mails);
+      } catch (error) {
+        console.error("Error fetching received mails: ", error);
+      }
+    };
+
+    fetchReceivedMails();
+  }, [email]);
+ 
+  // const extractPreviewFromJSON = (jsonContent, maxChars = 100) => {
+  //   try {
+  //     const parsedContent = JSON.parse(jsonContent);
+  //     const text = parsedContent?.blocks?.[0]?.text || "";
+  //     const preview = text.slice(0, maxChars);
+  //     return preview;
+  //   } catch (error) {
+  //     console.error("Error parsing JSON content: ", error);
+  //     return "";
+  //   }
+  // };
+  const fetchNewMails = async () => {
+    try {
+      const queryData = await getDocs(collection(db, `mailboxes/${email}/inbox`));
+
+      const mails = [];
+      queryData.forEach((doc) => {
+        mails.push({ id: doc.id, ...doc.data(), read: doc.data().read || false });
+      });
+
+      // Check for new mails by comparing with the existing mails
+      const newMails = mails.filter((mail) => !receivedMails.find((existingMail) => existingMail.id === mail.id));
+
+      if (newMails.length > 0) {
+        // If there are new mails, update the local state
+        setReceivedMails((prevMails) => [...newMails, ...prevMails]);
+
+        // Update the unread count
+        const newUnreadCount = countUnreadMails() + newMails.filter((mail) => !mail.read).length;
+        dispatch(mailAction.updateUnreadCount(newUnreadCount));
+      }
+    } catch (error) {
+      console.error("Error fetching new mails: ", error);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch new mails every 2 seconds (adjust the interval as needed)
+    const intervalId = setInterval(fetchNewMails, 2000);
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [email, receivedMails, dispatch]);
+
+
+  const handleComposeClick = () => {
+    history.replace("./compose");
+  };
+
+  const handleMailClick = async (mail) => {
+    if (!mail.read) {
+      // If the mail is unread, update the 'read' status in the database
+      const mailDocRef = doc(db, `mailboxes/${email}/inbox`, mail.id);
+      await updateDoc(mailDocRef, { read: true });
+
+      // Update the local state to reflect the change
+      const updatedReceivedMails = receivedMails.map((m) =>
+        m.id === mail.id ? { ...m, read: true } : m
+      );
+      setReceivedMails(updatedReceivedMails);
+
+      // Dispatch an action to update the unread count in Redux (if applicable)
+      dispatch(mailAction.sendMail({
+        id: mail.id,
+        from: mail.from,
+        subject: mail.subject,
+        content: mail.content,
+        read: true,
+      }));
+     
+    }
+
+    
+    history.push(`/message/${mail.id}`);
+  };
+
+  const countUnreadMails = () => {
+    return receivedMails.filter((mail) => !mail.read).length;
+  };
+
+  return (
+    <Container className="d-flex align-items-center justify-content-center vh-80">
+      <Card className="shadow" style={{ width: "70rem", marginTop: "3rem" }}>
+        <Card.Header>
+          <h5>Inbox</h5>
+        </Card.Header>
+        <Card.Body>
+          <ListGroup>
+            {receivedMails.map((mail) => (
+              <ListGroup.Item
+                key={mail.id}
+                onClick={() => handleMailClick(mail)}
+                style={{ cursor: "pointer", backgroundColor: mail.read ? "" : "#d3eff8" }}
+              >
+                <strong>From: {mail.from}</strong>
+                <br />
+                <span>Subject: {mail.subject}</span>
+                <br />
+                {/* <span>{extractPreviewFromJSON(mail.content)}...</span>
+                <br /> */}
+                {!mail.read && <Badge bg="info">New</Badge>}
+                
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Card.Body>
+        <Card.Footer>
+          <Button variant="primary" onClick={handleComposeClick}>
+            Compose
+          </Button>
+          <div className="float-end">
+            <Badge bg="danger">{countUnreadMails()}</Badge> Unread
+          </div>
+        </Card.Footer>
+      </Card>
+    </Container>
+  );
+};
+
+export default Inbox;
+
